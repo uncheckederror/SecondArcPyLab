@@ -11,30 +11,29 @@ sys.path.append('C:\\Program Files (x86)\\ArcGIS\\Desktop10.3\\arcpy')
 sys.path.append('C:\\Program Files (x86)\\ArcGIS\\Desktop10.3\\ArcToolbox\\Scripts')
 
 #Single varible for changing path names and setting workspace
-workspace = r"C:\Users\Thomas\Downloads\Geog 458 Lab 2\\"
-arcpy.env.workspace = workspace
-env.overwriteOutput = True
+arcpy.env.overwriteOutput = True
 
 #Grabbing inputfiles
-mytable = workspace + r"King\King.shp\\"
-reclasstable = workspace + r"ReclassTableExample.dbf\\"
+#@String Pathnames
+mytable = arcpy.GetParameterAsText(0)
+reclasstable = arcpy.GetParameterAsText(1)
+#@String fieldnames
+infield = arcpy.GetParameterAsText(2)
+outfield = arcpy.GetParameterAsText(3)
+#@Integer
+usenotfoundvalue = arcpy.GetParameterAsText(4)
+#@Boolean
+notfoundvalue = arcpy.GetParameterAsText(5)
 
-#Taking user input
-infield = input("Enter the name of the field you want to reclassify: ")
-outfield = input("Enter the name of the new field: ")
-usenotfoundvalue = True
-
-#Defining the function of the notfoundvalue input varible
-notfoundvalue = input("Do you want to assign a placeholder for values outside of the reclassification range?")
-if notfoundvalue == "Yes" or "yes" or "y" or "ye":    
-    notfoundvalue = input("Enter placeholder for values outside of the classification range: ")
-elif notfoundvalue == "No" or "no" or "n" or "na":
-    usenotfoundvalue = False
-else:
-    notfoundvalue = input("Do you want to assign a placeholder for values outside of the reclassification range?")
+#For intial testing
+#mytable = workspace + "King\\King.shp\\"
+#reclasstable = workspace + "ReclassTableExample.dbf\\"
+#infield = "PopDens12"
+#outfield = "Pop12Cat"
+#notfoundvalue = 9999
 
 #Creating outfield and input shapefile cursor
-arcpy.AddField_management(cur_shapefile, outfield, "DOUBLE", "")
+arcpy.AddField_management(mytable, outfield, "DOUBLE", "")
 mytable_cursor = arcpy.da.UpdateCursor(mytable,[infield, outfield])
 
 #Looping through the input shapefile
@@ -48,15 +47,20 @@ for cur_row in mytable_cursor:
         if cur_row[0] >= cur_value[0] and cur_row[0] <= cur_value[1]:
                 
             cur_row[1] = cur_value[2]
-            mytable_cursor.updateRow(cur_row)
             updated = True
+            print "Reclassified"
     #Clean up
     del reclasstable_cursor
     #Checking whether or not to use the notfoundvalue
     if not updated:
         if usenotfoundvalue:
             cur_row[1] = notfoundvalue
+            print "Used notfoundvalue of " + str(notfoundvalue)
         else:
             cur_row[1] = cur_row[0]
+            print "Used orginal value of " + str(cur_row[0])
+
+    mytable_cursor.updateRow(cur_row)
+        
 #Clean up    
 del mytable_cursor
