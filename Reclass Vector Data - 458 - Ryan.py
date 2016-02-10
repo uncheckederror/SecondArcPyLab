@@ -24,6 +24,8 @@ outfield = arcpy.GetParameterAsText(3)
 usenotfoundvalue = arcpy.GetParameterAsText(4)
 #@Boolean
 notfoundvalue = arcpy.GetParameterAsText(5)
+#@String Pathname
+outputfile = arcpy.GetParameterAsText(6)
 
 #For intial testing
 #mytable = workspace + "King\\King.shp\\"
@@ -33,8 +35,9 @@ notfoundvalue = arcpy.GetParameterAsText(5)
 #notfoundvalue = 9999
 
 #Creating outfield and input shapefile cursor
-arcpy.AddField_management(mytable, outfield, "DOUBLE", "")
-mytable_cursor = arcpy.da.UpdateCursor(mytable,[infield, outfield])
+arcpy.CopyFeatures_management(mytable, outputfile)
+arcpy.AddField_management(outputfile, outfield, "DOUBLE", "")
+mytable_cursor = arcpy.da.UpdateCursor(outputfile,[infield, outfield])
 
 #Looping through the input shapefile
 for cur_row in mytable_cursor:
